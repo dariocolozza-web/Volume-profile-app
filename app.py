@@ -385,11 +385,11 @@ def extract_volume_nodes(profile, top_n=10):
 # ============================================================
 
 st.title("📊 Volume Profile Analyzer")
-st.caption("Resonance QuantLab — inserisci un ticker Yahoo Finance (es. AAPL, RACE, ES=F, BTC-USD)")
+st.caption("Resonance QuantLab — inserisci un ticker Yahoo Finance (es. AAPL, NVDA, SPY, ES=F, BTC-USD)")
 
 col1, col2, col3 = st.columns([3, 2, 1])
 with col1:
-    ticker = st.text_input("Ticker", value="RACE", label_visibility="collapsed", placeholder="Inserisci il ticker (es. AAPL)")
+    ticker = st.text_input("Ticker", value="SPY", label_visibility="collapsed", placeholder="Inserisci il ticker (es. AAPL)")
 with col2:
     lookback = st.slider(
         "Lookback", LOOKBACK_MIN, LOOKBACK_MAX, LOOKBACK_DEFAULT, 10,
