@@ -21,7 +21,9 @@ import yfinance as yf
 # ============================================================
 
 YEARS = 2
-LOOKBACK = 250
+LOOKBACK_DEFAULT = 250
+LOOKBACK_MIN = 20
+LOOKBACK_MAX = 750
 ROWS = 200
 ROLLING_POC_WINDOWS = [28, 60, 150, 200, 250]
 
@@ -385,11 +387,20 @@ def extract_volume_nodes(profile, top_n=10):
 st.title("📊 Volume Profile Analyzer")
 st.caption("Resonance QuantLab — inserisci un ticker Yahoo Finance (es. AAPL, RACE, ES=F, BTC-USD)")
 
-col1, col2 = st.columns([3, 1])
+col1, col2, col3 = st.columns([3, 2, 1])
 with col1:
     ticker = st.text_input("Ticker", value="RACE", label_visibility="collapsed", placeholder="Inserisci il ticker (es. AAPL)")
 with col2:
+    lookback = st.slider(
+        "Lookback", LOOKBACK_MIN, LOOKBACK_MAX, LOOKBACK_DEFAULT, 10,
+        label_visibility="collapsed",
+        help="Numero di barre daily usate per costruire il Volume Profile. "
+             "Più lungo = quadro strutturale; più corto = fotografia recente.",
+    )
+with col3:
     analizza = st.button("Analizza", type="primary", use_container_width=True)
+
+st.caption(f"Lookback: **{lookback}** barre daily (≈ {lookback/21:.0f} mesi di contrattazioni)")
 
 with st.expander("Impostazioni rilevamento Value Area"):
     c1, c2 = st.columns(2)
@@ -412,14 +423,25 @@ if analizza:
     else:
         ticker = ticker.strip().upper()
 
+        # Scarico abbastanza storico da coprire il lookback richiesto
+        # (~252 barre per anno) più un margine per il Rolling POC
+        years_needed = max(YEARS, int(np.ceil(lookback / 252)) + 1)
+
         with st.spinner(f"Scarico i dati per {ticker}..."):
-            df = download_data(ticker, YEARS)
+            df = download_data(ticker, years_needed)
 
         if df is None or df.empty:
             st.error(f"Nessun dato trovato per il ticker '{ticker}'. Verifica che sia corretto su Yahoo Finance.")
         else:
+            effective_lookback = min(lookback, len(df))
+            if effective_lookback < lookback:
+                st.warning(
+                    f"Storico disponibile per {ticker}: **{len(df)} barre**, "
+                    f"meno delle {lookback} richieste. Uso tutte le barre disponibili."
+                )
+
             with st.spinner("Calcolo il Volume Profile..."):
-                result = calculate_volume_profile(df, lookback=min(LOOKBACK, len(df)), rows=ROWS)
+                result = calculate_volume_profile(df, lookback=effective_lookback, rows=ROWS)
                 high_nodes, low_nodes = extract_volume_nodes(result["profile"], top_n=10)
 
             with st.spinner("Calcolo il Rolling POC multi-finestra (qualche secondo)..."):
