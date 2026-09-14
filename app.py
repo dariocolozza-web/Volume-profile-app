@@ -28,7 +28,7 @@ ROWS = 200
 ROLLING_POC_WINDOWS = [28, 60, 150, 200, 250]
 
 # Parametri rilevamento value area multiple
-VA_PROMINENCE = 0.05     # quanto deve sporgere un picco per contare come cluster
+VA_PROMINENCE = 0.04     # quanto deve sporgere un picco per contare come cluster
 VA_SMOOTH_WINDOW = 5     # ampiezza media mobile sul profilo
 VA_LOWER_PCT = 0.10      # coda inferiore di ogni cluster
 VA_UPPER_PCT = 0.90      # coda superiore di ogni cluster
